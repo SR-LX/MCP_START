@@ -42,11 +42,6 @@ def get_greeting(name: str) -> str:
     """Get a personalized greeting"""
     return f"Hello, {name}!"
 
- 
-@mcp.tool(name='add_prompt', description='这是提示词')
-async def add_prompt(prompt: str=Field(description='输入提示词到mcp服务器')):
-    # Implement logic to add prompt
-    return f'Prompt {prompt} added successfully'
 
 @mcp.tool(name="generate_image",description='生成图片')
 async def generate_image(
@@ -87,14 +82,37 @@ async def generate_image(
         if not response or "data" not in response:
             return f"API调用失败: 未获取到有效响应"
         
-        # 获取图片URL列表
-        image_urls = response["data"].get("image_urls", [])
+        # 获取API返回的所有相关数据
+        data = response["data"]
+        image_urls = data.get("image_urls", [])
+        binary_data_base64 = data.get("binary_data_base64", [])
+        pe_result = data.get("pe_result", "")
+        predict_tags_result = data.get("predict_tags_result", "")
+        rephraser_result = data.get("rephraser_result", "")
+        request_id = data.get("request_id", "")
+        algorithm_base_resp = data.get("algorithm_base_resp", {})
+        
+        # 获取响应的其他元数据
+        code = response.get("code", 0)
+        message = response.get("message", "")
+        status = response.get("status", 0)
+        time_elapsed = response.get("time_elapsed", "")
         
         if image_urls:
             return {
                 "success": True,
                 "message": "图片生成完成",
-                "urls": image_urls
+                "urls": image_urls,
+                "binary_data_base64": binary_data_base64,
+                "pe_result": pe_result,
+                "predict_tags_result": predict_tags_result,
+                "rephraser_result": rephraser_result,
+                "request_id": request_id,
+                "algorithm_base_resp": algorithm_base_resp,
+                "code": code,
+                "api_message": message,
+                "status": status,
+                "time_elapsed": time_elapsed
             }
         else:
             return {
